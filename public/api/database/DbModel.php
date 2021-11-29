@@ -161,7 +161,7 @@ abstract class DbModel
    * Executa uma instrução SQL de atualização (UPDATE), tenta retornar o número de linhas afetadas.
    * @param string $sql Instrução SQL com UPDATE.
    * @param array $bindParams Valores da instrução.
-   * @return int Quantiade de linhas afetadas.
+   * @return int Quantidade de linhas afetadas.
    */
   public function update($sql, $bindParams = array()) {
     $statement = $this->statementExecutado($sql, $bindParams);

@@ -3,31 +3,13 @@
     <v-app-bar
       v-if="$store.state.session.token"
       class="d-print-none"
-      :dense="$vuetify.breakpoint.smAndDown"
       :color="$store.state.dark ? 'secondary' : 'primary'"
       app
+      dense
       dark
     >
       <v-app-bar-nav-icon @click.stop="showMenu = !showMenu" />
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
-
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
+      <v-app-bar-title>Bar JK</v-app-bar-title>
       <v-spacer></v-spacer>
       <v-tooltip bottom v-if="$vuetify.breakpoint.smAndUp">
         <template v-slot:activator="{ on: tooltip }">
@@ -92,11 +74,39 @@
             </v-list-item-avatar>
             <v-list-item-content>
               <v-list-item-title>{{$store.getters['session/payload'].usuario.nome}}</v-list-item-title>
-              <v-list-item-subtitle>Funcionário</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         </v-list>
       </template>
+      <v-divider></v-divider>
+      <v-list nav dense>
+        <v-list-item-group color="primary">
+          <v-list-item to="/">
+            <v-list-item-icon>
+              <v-icon>mdi-home</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>Boas vindas</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item to="/vendas">
+            <v-list-item-icon>
+              <v-icon>mdi-cart</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>Vendas</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item to="/produtos">
+            <v-list-item-icon>
+              <v-icon>mdi-human-dolly</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>Produtos</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list-item-group>
+      </v-list>
       <template v-slot:append>
         <div class="px-2 pb-1">
           <v-btn
