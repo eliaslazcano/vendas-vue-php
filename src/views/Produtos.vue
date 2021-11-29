@@ -19,11 +19,11 @@
         <template v-slot:item.preco="{item}">
           R$ {{item.preco.toFixed(2).replace('.',',')}}
         </template>
-        <template v-slot:item.actions>
+        <template v-slot:item.actions="{item}">
           <v-btn icon color="amber" small>
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
-          <v-btn icon color="red" small>
+          <v-btn icon color="red" small @click="apagarProduto(item)" :loading="loadingBtnApagar.includes(item.id)">
             <v-icon>mdi-delete</v-icon>
           </v-btn>
         </template>
@@ -79,6 +79,7 @@ export default {
       masked: false /* doesn't work with directive */
     },
     loadingEditor: false,
+    loadingBtnApagar: [],
     rules: {
       campoObrigatorio: v => !!v || 'Campo obrigatório',
       campoMonetario: v => v === 'R$ 0,00' || StringHelper.monetaryToDouble(v) < 10000 || 'Insira um valor adequado',
@@ -114,12 +115,13 @@ export default {
     },
     async apagarProduto(produto) {
       if (!confirm(`Tem certeza que quer apagar "${produto.nome}"?`)) return;
+      if (!this.loadingBtnApagar.includes(produto.id)) this.loadingBtnApagar.push(produto.id);
       try {
         const appWebClient = new AppWebClient();
         await appWebClient.produtos.deletar(produto.id);
         await this.loadData();
       } finally {
-        alert('Produto deletado');
+        this.loadingBtnApagar = this.loadingBtnApagar.filter(i => i !== produto.id);
       }
     }
   },

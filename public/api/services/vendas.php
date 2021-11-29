@@ -13,5 +13,6 @@ if (HttpHelper::isGet()) {
   HttpHelper::emitirJson($vendas);
 } elseif (HttpHelper::isPost()) {
   $cliente = HttpHelper::obterParametro('cliente');
-  $db->insert('INSERT INTO vendas (cliente, criado_por) VALUES (:cliente, :usuario)', [':cliente' => $cliente, ':usuario' => $payload['usuario']['id']]);
+  $id = $db->insert('INSERT INTO vendas (cliente, criado_por) VALUES (:cliente, :usuario)', [':cliente' => $cliente, ':usuario' => $payload['usuario']['id']]);
+  HttpHelper::emitirJson($id);
 }

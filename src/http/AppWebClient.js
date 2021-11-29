@@ -6,7 +6,7 @@ export default class AppWebClient {
 
   static createFormData(object) {
     const formData = new FormData();
-    for (let key in object) formData.append(key, object[key].toString());
+    for (let key in object) if (object[key]) formData.append(key, object[key].toString());
     return formData;
   }
 
@@ -32,7 +32,6 @@ export default class AppWebClient {
       return data;
     },
   };
-
   produtos = {
     inserir: async (nome, preco, codigo) => {
       const formData = AppWebClient.createFormData({nome, preco, codigo});
@@ -50,6 +49,17 @@ export default class AppWebClient {
     },
     deletar: async (id) => {
       await this.axios.delete('produtos', {params: {id}});
+    },
+  };
+  clientes = {
+    inserir: async (nome, cpf) => {
+      const formData = AppWebClient.createFormData({nome, cpf});
+      const {data} =  await this.axios.post('clientes', formData);
+      return data;
+    },
+    listar: async () => {
+      const {data} =  await this.axios.get('clientes');
+      return data;
     },
   };
 }
