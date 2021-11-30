@@ -4,7 +4,7 @@ use App\Helpers\HttpHelper;
 use App\Helpers\AuthHelper;
 use App\Database\DbApp;
 
-HttpHelper::validarMetodos(['GET','POST']);
+HttpHelper::validarMetodos(['GET','POST','DELETE']);
 $db = new DbApp();
 $payload = AuthHelper::autenticarSessao($db->getConexao());
 
@@ -15,4 +15,8 @@ if (HttpHelper::isGet()) {
   $cliente = HttpHelper::obterParametro('cliente');
   $id = $db->insert('INSERT INTO vendas (cliente, criado_por) VALUES (:cliente, :usuario)', [':cliente' => $cliente, ':usuario' => $payload['usuario']['id']]);
   HttpHelper::emitirJson($id);
+} elseif (HttpHelper::isDelete()) {
+  $id = HttpHelper::validarParametro('id');
+  $afetados = $db->update('DELETE FROM vendas WHERE id = :id', [':id' => $id]);
+  HttpHelper::emitirJson($afetados && $afetados > 0);
 }

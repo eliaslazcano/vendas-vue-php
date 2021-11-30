@@ -22,11 +22,11 @@
           <v-chip color="error" label small v-else>NÃO</v-chip>
         </template>
         <template v-slot:item.criado_em="{item}">{{formatarDatetime(item.criado_em)}}</template>
-        <template v-slot:item.actions>
-          <v-btn icon color="amber" small>
+        <template v-slot:item.actions="{item}">
+          <v-btn icon color="amber" small @click="visualizarVenda(item.id)">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
-          <v-btn icon color="red" small>
+          <v-btn icon color="red" small @click="deletarVenda(item)" :loading="loadingBtnApagar.includes(item.id)">
             <v-icon>mdi-delete</v-icon>
           </v-btn>
         </template>
@@ -80,6 +80,38 @@
         </v-form>
       </v-card>
     </v-dialog>
+    <v-dialog width="720" max-width="96%" v-model="dialogVenda">
+      <v-card v-if="venda">
+        <v-card-title class="blue white--text justify-space-between">
+          Venda nº{{venda.id}}
+          <v-icon size="32" @click="dialogVenda = false" color="white">mdi-close</v-icon>
+        </v-card-title>
+        <hr class="mb-3"/>
+        <v-card-text>
+          <v-text-field
+            label="Cliente"
+            :value="venda.cliente ? venda.cliente_nome : 'Anônimo'"
+            outlined dense readonly
+          />
+          <v-autocomplete
+            label="Adicionar produto"
+            item-value="id"
+            item-text="nome"
+            :items="produtos"
+            outlined dense
+          />
+          <v-card outlined>
+            <v-data-table
+              dense hide-default-footer
+              no-data-text="Nenhum produto adicionado na venda"
+              :headers="[{value: 'produto_nome', text: 'Produto'},{value: 'preco_unitario', text: 'Preço Un'},{value: 'quantidade', text: 'Qtd'}, {value: 'valor', text: 'Total'}]"
+              :items="venda.itens"
+              :items-per-page="-1"
+            ></v-data-table>
+          </v-card>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </async-container>
 </template>
 
@@ -94,8 +126,10 @@ export default {
     loading: true,
     loadingCriarVenda: false,
     loadingCriarCliente: false,
+    loadingBtnApagar: [],
     dialogCriarVenda: false,
     dialogCriarCliente: false,
+    dialogVenda: false,
     tableHeaders: [
       {value: 'id', text: 'Nº', align: 'left', width: '4rem'},
       {value: 'cliente', text: 'Cliente', align: 'left'},
@@ -104,6 +138,8 @@ export default {
       {value: 'actions', text: '#', align: 'right', filterable: false, sortable: false},
     ],
     vendas: [],
+    venda: null,
+    produtos: [],
     iptCliente: null, //nulo = anonimo
     iptClienteItems: [],
     iptClienteNome: '',
@@ -116,6 +152,9 @@ export default {
     },
     async recarregarClientes() {
       this.iptClienteItems = await this.appWebClient.clientes.listar();
+    },
+    async recarregarProdutos() {
+      this.produtos = await this.appWebClient.produtos.listar();
     },
     async loadData() {
       try {
@@ -146,6 +185,26 @@ export default {
       } finally {
         this.loadingCriarCliente = false;
       }
+    },
+    async deletarVenda(venda) {
+      const mensagem = venda.cliente_nome ? `Apagar esta venda de ${venda.cliente_nome}?` : 'Apagar esta venda?';
+      if (!confirm(mensagem)) return;
+      if (!this.loadingBtnApagar.includes(venda.id)) this.loadingBtnApagar.push(venda.id);
+      try {
+        await this.appWebClient.vendas.deletar(venda.id);
+        await this.recarregarVendas();
+      } finally {
+        this.loadingBtnApagar = this.loadingBtnApagar.filter(i => i !== venda.id);
+      }
+    },
+    async visualizarVenda(id) {
+      const promisses = [];
+      promisses.push(this.appWebClient.vendas.obter(id));
+      if (this.produtos.length === 0) promisses.push(this.recarregarProdutos());
+      const resultado = await Promise.all(promisses);
+      this.venda = resultado[0];
+      if (this.produtos.length === 0) this.produtos = resultado[1];
+      this.dialogVenda = true;
     },
     formatarDatetime(datetime) {
       return moment(datetime).format('DD/MM/YYYY HH:mm');

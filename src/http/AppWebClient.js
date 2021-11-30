@@ -31,6 +31,14 @@ export default class AppWebClient {
       const {data} =  await this.axios.get('vendas');
       return data;
     },
+    obter: async (id) => {
+      const {data} =  await this.axios.get('visualizar_venda', {params: {id}});
+      return data;
+    },
+    deletar: async (id) => {
+      const {data} =  await this.axios.delete('vendas', {params: {id}});
+      return data;
+    },
   };
   produtos = {
     inserir: async (nome, preco, codigo) => {
