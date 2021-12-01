@@ -21,22 +21,14 @@ export default class AppWebClient {
     return data;
   }
 
-  vendas = {
-    inserir: async (cliente) => {
-      const formData = AppWebClient.createFormData({cliente});
-      const {data} =  await this.axios.post('vendas', formData);
+  clientes = {
+    inserir: async (nome, cpf) => {
+      const formData = AppWebClient.createFormData({nome, cpf});
+      const {data} =  await this.axios.post('clientes', formData);
       return data;
     },
     listar: async () => {
-      const {data} =  await this.axios.get('vendas');
-      return data;
-    },
-    obter: async (id) => {
-      const {data} =  await this.axios.get('visualizar_venda', {params: {id}});
-      return data;
-    },
-    deletar: async (id) => {
-      const {data} =  await this.axios.delete('vendas', {params: {id}});
+      const {data} =  await this.axios.get('clientes');
       return data;
     },
   };
@@ -59,14 +51,38 @@ export default class AppWebClient {
       await this.axios.delete('produtos', {params: {id}});
     },
   };
-  clientes = {
-    inserir: async (nome, cpf) => {
-      const formData = AppWebClient.createFormData({nome, cpf});
-      const {data} =  await this.axios.post('clientes', formData);
+  vendas = {
+    inserir: async (cliente) => {
+      const formData = AppWebClient.createFormData({cliente});
+      const {data} =  await this.axios.post('vendas', formData);
       return data;
     },
     listar: async () => {
-      const {data} =  await this.axios.get('clientes');
+      const {data} =  await this.axios.get('vendas');
+      return data;
+    },
+    obter: async (id) => {
+      const {data} =  await this.axios.get('visualizar_venda', {params: {id}});
+      return data;
+    },
+    deletar: async (id) => {
+      const {data} =  await this.axios.delete('vendas', {params: {id}});
+      return data;
+    },
+  };
+  vendas_itens = {
+    inserir: async (venda, produto, quantidade, preco_unitario) => {
+      const formData = AppWebClient.createFormData({venda, produto, quantidade, preco_unitario});
+      const {data} =  await this.axios.post('vendas_itens', formData);
+      return data;
+    },
+    atualizar: async (id, quantidade, preco_unitario) => {
+      const formData = AppWebClient.createFormData({id, quantidade, preco_unitario});
+      const {data} =  await this.axios.put('vendas_itens', formData);
+      return data;
+    },
+    deletar: async (id) => {
+      const {data} =  await this.axios.delete('vendas', {params: {id}});
       return data;
     },
   };

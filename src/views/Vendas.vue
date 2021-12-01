@@ -23,7 +23,13 @@
         </template>
         <template v-slot:item.criado_em="{item}">{{formatarDatetime(item.criado_em)}}</template>
         <template v-slot:item.actions="{item}">
-          <v-btn icon color="amber" small @click="visualizarVenda(item.id)">
+          <v-btn
+            icon small
+            color="amber"
+            @click="visualizarVenda(item.id)"
+            :loading="loadingBtnEditarVenda === item.id"
+            :disabled="loadingBtnEditarVenda && loadingBtnEditarVenda !== item.id"
+          >
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
           <v-btn icon color="red" small @click="deletarVenda(item)" :loading="loadingBtnApagar.includes(item.id)">
@@ -80,13 +86,17 @@
         </v-form>
       </v-card>
     </v-dialog>
-    <v-dialog width="720" max-width="96%" v-model="dialogVenda">
+    <v-dialog width="720" max-width="96%" v-model="dialogVenda" persistent hide-overlay>
       <v-card v-if="venda">
-        <v-card-title class="blue white--text justify-space-between">
-          Venda nº{{venda.id}}
-          <v-icon size="32" @click="dialogVenda = false" color="white">mdi-close</v-icon>
-        </v-card-title>
-        <hr class="mb-3"/>
+        <v-toolbar color="primary" dark flat dense class="mb-4">
+          <v-toolbar-title>Venda nº{{venda.id}}</v-toolbar-title>
+          <v-spacer/>
+          <v-toolbar-items>
+            <v-btn icon @click="dialogVenda = false">
+              <v-icon color="white">mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
         <v-card-text>
           <v-text-field
             label="Cliente"
@@ -94,20 +104,33 @@
             outlined dense readonly
           />
           <v-autocomplete
+            v-model="iptProduto"
             label="Adicionar produto"
             item-value="id"
             item-text="nome"
+            append-outer-icon="mdi-send"
+            @click:append-outer="inserirProduto()"
+            @keydown.enter="inserirProduto()"
             :items="produtos"
-            outlined dense
+            :disabled="loadingInserindoProduto"
+            :loading="loadingInserindoProduto"
+            outlined dense autofocus
           />
           <v-card outlined>
             <v-data-table
               dense hide-default-footer
               no-data-text="Nenhum produto adicionado na venda"
-              :headers="[{value: 'produto_nome', text: 'Produto'},{value: 'preco_unitario', text: 'Preço Un'},{value: 'quantidade', text: 'Qtd'}, {value: 'valor', text: 'Total'}]"
+              :headers="vendaProdutosHeader"
               :items="venda.itens"
               :items-per-page="-1"
-            ></v-data-table>
+            >
+              <template v-slot:item.preco_unitario="{item}">
+                R$ {{item.preco_unitario.toFixed(2).replace('.',',')}}
+              </template>
+              <template v-slot:item.valor="{item}">
+                R$ {{item.preco_unitario.toFixed(2).replace('.',',')}}
+              </template>
+            </v-data-table>
           </v-card>
         </v-card-text>
       </v-card>
@@ -127,6 +150,8 @@ export default {
     loadingCriarVenda: false,
     loadingCriarCliente: false,
     loadingBtnApagar: [],
+    loadingBtnEditarVenda: false,
+    loadingInserindoProduto: false,
     dialogCriarVenda: false,
     dialogCriarCliente: false,
     dialogVenda: false,
@@ -139,7 +164,14 @@ export default {
     ],
     vendas: [],
     venda: null,
+    vendaProdutosHeader: [
+      {value: 'produto_nome', text: 'Produto'},
+      {value: 'quantidade', text: 'Qtd'},
+      {value: 'preco_unitario', text: 'Preço Un'},
+      {value: 'valor', text: 'Total'}
+    ],
     produtos: [],
+    iptProduto: null,
     iptCliente: null, //nulo = anonimo
     iptClienteItems: [],
     iptClienteNome: '',
@@ -198,13 +230,29 @@ export default {
       }
     },
     async visualizarVenda(id) {
-      const promisses = [];
-      promisses.push(this.appWebClient.vendas.obter(id));
-      if (this.produtos.length === 0) promisses.push(this.recarregarProdutos());
-      const resultado = await Promise.all(promisses);
-      this.venda = resultado[0];
-      if (this.produtos.length === 0) this.produtos = resultado[1];
-      this.dialogVenda = true;
+      this.loadingBtnEditarVenda = id;
+      try {
+        const recarregarProdutos = this.produtos.length === 0;
+        const promisses = [];
+        promisses.push(this.appWebClient.vendas.obter(id));
+        if (recarregarProdutos) promisses.push(this.recarregarProdutos());
+        const resultado = await Promise.all(promisses);
+        this.venda = resultado[0];
+        this.dialogVenda = true;
+      } finally {
+        this.loadingBtnEditarVenda = false;
+      }
+    },
+    async inserirProduto() {
+      const produto = this.produtos.find(i => i.id === this.iptProduto);
+      this.loadingInserindoProduto = true;
+      try {
+        const id = await this.appWebClient.vendas_itens.inserir(this.venda.id, this.iptProduto, 1, produto.preco);
+        this.venda.itens.push({id, produto: produto.id, produto_nome: produto.nome, quantidade: 1, preco_unitario: produto.preco});
+        this.iptProduto = null;
+      } finally {
+        this.loadingInserindoProduto = false;
+      }
     },
     formatarDatetime(datetime) {
       return moment(datetime).format('DD/MM/YYYY HH:mm');

@@ -28,7 +28,7 @@ if (HttpHelper::isGet()) {
   else {
     $id = $db->insert('INSERT INTO produtos (nome, preco, codigo, criado_por) VALUES (:nome, :preco, :codigo, :criado_por)', [':nome' => $nome, ':preco' => $preco, ':codigo' => $codigo, ':criado_por' => $payload['usuario']['id']]);
   }
-  HttpHelper::emitirJson($id);
+  HttpHelper::emitirJson((int) $id);
 } elseif (HttpHelper::isDelete()) {
   $id = HttpHelper::validarParametro('id');
   $afetados = $db->update('UPDATE produtos SET deletado_em = current_timestamp, deletado_por = :deletado_por WHERE id = :id', [':deletado_por' => $payload['usuario']['id'], ':id' => $id]);
