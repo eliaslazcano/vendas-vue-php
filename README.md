@@ -17,6 +17,11 @@ npm install
 npm run serve
 ```
 
+### Servidor de desenvolvimento back-end
+```
+php -S localhost:3000 -t api
+```
+
 ### Compilar para produção
 ```
 npm run build
