@@ -1,24 +1,23 @@
-# pdv-lazcano
+# vendas-vue-php
 
-## Project setup
+Sistema de Venda em balcão para conveniências e bares
+
+## Tecnologias
+FrontEnd com utilização de Vue 2 e Vuetify.
+Backend com utilização de PHP 7 para servir API's JSON.
+Banco de dados em MySQL.
+
+## Instalação de dependências do webpack
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Servidor de desenvolvimento front-end
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Compilar para produção
 ```
 npm run build
 ```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
